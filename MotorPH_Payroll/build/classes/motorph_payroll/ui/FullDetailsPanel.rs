@@ -1,0 +1,1 @@
+motorph_application.ui.FullDetailsPanel
