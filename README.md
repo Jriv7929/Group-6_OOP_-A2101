@@ -1,4 +1,4 @@
-# Group 6
+# Group-Objection
 # Hi there! <img src="https://github.com/TheDudeThatCode/TheDudeThatCode/blob/master/Assets/Hi.gif" width="35" />
 
 <p align="center">
@@ -6,14 +6,14 @@
 </p>
 
 ### <img src="https://github.com/TheDudeThatCode/TheDudeThatCode/blob/master/Assets/Developer.gif" width="45" /> About Us:
-<h1 align="center">🌟 Computer Programming 2 Team Daemon 🌟</h1>
+<h1 align="center">🌟 Object-Oriented Programming Team Objection 🌟</h1>
 
 <p align="center">
- 🚀 Explore the Incredible Creations of MO-IT103 Team Daemon! 🎉 We are a group of enthusiastic beginners diving into the world of programming. Our goal is to learn, collaborate, and build awesome projects together!
+ 🚀 Explore the Incredible Creations of MO-IT110 Team Objection 🎉 We are a group of enthusiastic beginners diving into the world of programming. Our goal is to learn, collaborate, and build awesome projects together!
 </p>   
 
 ## 👋 Who Are We?
-We are a group of beginner programmers excited to learn Java as part of our **Computer Programming 1** journey! Our goal is to build strong fundamentals, work on fun projects, and support each other as we grow into confident developers. 💡
+We are a group of beginner programmers excited to learn Java as part of our **Object-Oriented Programming** journey! Our goal is to build strong fundamentals, work on fun projects, and support each other as we grow into confident developers. 💡
 
 
 
@@ -42,7 +42,7 @@ Happy Coding! 💻🔥
 
 ## 📈 Current Project Progress
 
-🔧 **Completed**  
+🔧 **Updating**  
 
 ---
 
@@ -54,7 +54,7 @@ Get started with Payroll Hub in just a few steps:
 
 1️⃣ **Clone this repository**
 
-- git clone https://github.com/Kristov-Judilla/MO-IT101-Group1.git
+- git clone [https://github.com/Kristov-Judilla/MO-IT101-Group1.git](https://github.com/Jriv7929/Group-6_OOP_-A2101.git)
   
 2️⃣ **Open in NetBeans**
 
