@@ -1,21 +1,31 @@
-# Group-Objection
-# Hi there! <img src="https://github.com/TheDudeThatCode/TheDudeThatCode/blob/master/Assets/Hi.gif" width="35" />
+# <h1 align="center"> WELCOME! </h1>
+
+
 
 <p align="center">
   <img src="https://github.com/Kristov-Judilla/MO-IT101-Group1/raw/main/assets/banner.png" alt="Payroll Hub Banner" width="100%">
 </p>
 
-### <img src="https://github.com/TheDudeThatCode/TheDudeThatCode/blob/master/Assets/Developer.gif" width="45" /> About Us:
-<h1 align="center">🌟 Object-Oriented Programming Team Objection 🌟</h1>
+<h2 align="center"> <img src="https://github.com/TheDudeThatCode/TheDudeThatCode/blob/master/Assets/Developer.gif" width="45" /> About Us </h2>
 
 <p align="center">
- 🚀 Explore the Incredible Creations of MO-IT110 Team Objection 🎉 We are a group of enthusiastic beginners diving into the world of programming. Our goal is to learn, collaborate, and build awesome projects together!
+OBJECTION is an Object-Oriented Programming initiative by IT students from Mapúa Malayan Digital College, focused on redesigning the MotorPH Payroll System into a scalable, modular architecture. Through abstraction, encapsulation, and inheritance, the project transforms procedural logic into a maintainable, enterprise-ready software design.
 </p>   
 
-## 👋 Who Are We?
-We are a group of beginner programmers excited to learn Java as part of our **Object-Oriented Programming** journey! Our goal is to build strong fundamentals, work on fun projects, and support each other as we grow into confident developers. 💡
+---
 
+## 💼 Portfolio Value
 
+This project demonstrates:
+- Real-world OOP architecture design
+- Enterprise-style class modeling
+- Secure payroll data handling
+- Modular and scalable system planning
+- Academic-to-industry skill transition
+
+Designed not just as a requirement — but as a developer growth milestone
+
+---
 
 ## 🎥 Coding in Action!
 ![Java Coding GIF](https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif)
