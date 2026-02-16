@@ -1,60 +1,66 @@
-# <h1 align="center"> WELCOME! </h1>
+# <img src="https://github.com/TheDudeThatCode/TheDudeThatCode/blob/master/Assets/Hi.gif" width="35" /> HELLO, WORLD!
+
 
 
 
 <p align="center">
-  <img src="https://github.com/Kristov-Judilla/MO-IT101-Group1/raw/main/assets/banner.png" alt="Payroll Hub Banner" width="100%">
+  <img width="2245" height="1587" alt="objection" src="https://github.com/user-attachments/assets/93d95ddc-4908-45f2-ac36-22a35c6aacda" />
 </p>
 
 <h2 align="center"> <img src="https://github.com/TheDudeThatCode/TheDudeThatCode/blob/master/Assets/Developer.gif" width="45" /> About Us </h2>
 
-<p align="center">
-OBJECTION is an Object-Oriented Programming initiative by IT students from Mapúa Malayan Digital College, focused on redesigning the MotorPH Payroll System into a scalable, modular architecture. Through abstraction, encapsulation, and inheritance, the project transforms procedural logic into a maintainable, enterprise-ready software design.
-</p>   
+OBJECTION is an Object-Oriented Programming initiative by IT students from Mapúa Malayan Digital College, focused on redesigning the MotorPH Payroll System into a scalable, modular architecture. Through abstraction, encapsulation, and inheritance, the project transforms procedural logic into a maintainable, enterprise-ready software design. 
 
 ---
 
-## 💼 Portfolio Value
+## ✨ Key Features
 
-This project demonstrates:
-- Real-world OOP architecture design
-- Enterprise-style class modeling
-- Secure payroll data handling
-- Modular and scalable system planning
-- Academic-to-industry skill transition
+- 🧩 Modular class-based payroll architecture
+- 🔐 Role-based user hierarchy (Admin, HR, IT, Logistics, etc.)
+- 📦 Separation of concerns
+- 🔄 Inheritance-driven design
+- 📊 Payroll computation engine
+- 🧪 Academic architecture documentation (CRC Cards, UML, etc.)
+
 
 Designed not just as a requirement — but as a developer growth milestone
 
 ---
+<!-- OOP CONCEPTS -->
+<div align="center">
 
-## 🎥 Coding in Action!
-![Java Coding GIF](https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif)
+<h2>🧠 OOP Concepts Applied</h2>
 
+<table>
+<tr>
+<th>🧩 Concept</th>
+<th>🚀 Implementation</th>
+</tr>
+<tr>
+<td><b>Encapsulation</b></td>
+<td>Sensitive payroll data encapsulated within domain classes</td>
+</tr>
+<tr>
+<td><b>Inheritance</b></td>
+<td>Role-based hierarchy extending a shared SystemUser base class</td>
+</tr>
+<tr>
+<td><b>Polymorphism</b></td>
+<td>Department-specific behaviors overriding base methods</td>
+</tr>
+<tr>
+<td><b>Abstraction</b></td>
+<td>Abstract parent classes defining shared system contracts</td>
+</tr>
+</table>
 
-📩 Contact us: 
-
-Happy Coding! 💻🔥
-<p align="center">
-  <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=java" alt="Java">
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/Status-Completed-green?style=for-the-badge" alt="Status">
-  <img src="https://img.shields.io/github/contributors/Kristov-Judilla/MO-IT101-Group1?style=for-the-badge" alt="Contributors">
-</p>
+</div>
 
 ---
-
-
-
----
-
-## 🗺️ Navigation Guide
-
 
 ## 📈 Current Project Progress
 
 🔧 **Updating**  
-
----
 
 ---
 
@@ -64,12 +70,12 @@ Get started with Payroll Hub in just a few steps:
 
 1️⃣ **Clone this repository**
 
-- git clone [https://github.com/Kristov-Judilla/MO-IT101-Group1.git](https://github.com/Jriv7929/Group-6_OOP_-A2101.git)
+- git clone https://github.com/Jriv7929/Group-6_OOP_-A2101.git
   
 2️⃣ **Open in NetBeans**
 
 - Open NetBeans and select `File > Open Project`.
-- Navigate to the cloned repository directory (`MO-IT101-Group1/MotorPH-Payroll-System`) and open the project.
+- Navigate to the cloned repository directory and open the project.
 - Ensure the `opencsv.jar` library is added to the project’s libraries (if not already included).
 
 3️⃣ **Run Payroll Hub**
@@ -82,7 +88,12 @@ Get started with Payroll Hub in just a few steps:
 
 4️⃣ **Log in credentials**
 
-- User ID: 10001
+**Employee**
+- User ID: JLopez
+- Password: 1234
+
+**Admin**
+- User ID: MGarcia
 - Password: 1234
 ---
 
