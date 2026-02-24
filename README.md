@@ -90,7 +90,7 @@ Get started with Payroll Hub in just a few steps:
 
 **Employee**
 - User ID: JLopez
-- Password: 1234
+- Password: MMDC1234!
 
 **Admin**
 - User ID: MGarcia
