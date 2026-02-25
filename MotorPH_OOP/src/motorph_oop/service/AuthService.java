@@ -1,14 +1,28 @@
 package motorph_oop.service;
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+import motorph_oop.dao.*;
+import motorph_oop.model.User;
 
-/**
- *
- * @author SCHOOL
- */
 public class AuthService {
-    
+
+    private UserDAO userDAO;
+
+    public AuthService() {
+        userDAO = new UserCSVDAO();
+    }
+
+    public User login(String username, String password) {
+
+        User user = userDAO.findByUsername(username);
+
+        if (user == null) {
+            return null;
+        }
+
+        if (user.getPassword().equals(password)) {
+            return user;
+        }
+
+        return null;
+    }
 }

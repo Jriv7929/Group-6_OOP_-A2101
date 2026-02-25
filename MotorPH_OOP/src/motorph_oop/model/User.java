@@ -3,29 +3,31 @@ package motorph_oop.model;
 
 public class User {
 
+    private String employeeNo;
     private String username;
     private String password;
-    private String role; // HR, IT, Finance, Non-Admin
+    private Role role;
 
-    public User(String username, String password, String role) {
+    public User(String employeeNo, String username, String password, Role role) {
+        this.employeeNo = employeeNo;
         this.username = username;
         this.password = password;
         this.role = role;
     }
 
-    public String getUsername() { return username; }
-    public String getPassword() { return password; }
-    public String getRole() { return role; }
-
-    public boolean isAdmin() {
-        return role.equalsIgnoreCase("HR") ||
-               role.equalsIgnoreCase("IT") ||
-               role.equalsIgnoreCase("Finance");
-        
+    public String getEmployeeNo() {
+        return employeeNo;
     }
 
-    @Override
-    public String toString() {
-        return "User: " + username + " | Role: " + role;
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Role getRole() {
+        return role;
     }
 }

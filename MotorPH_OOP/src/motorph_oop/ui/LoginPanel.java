@@ -5,6 +5,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import motorph_oop.service.AuthService;
 import motorph_oop.util.Constants;
 
 public class LoginPanel extends JFrame {
@@ -132,11 +133,7 @@ private void login() {
                 String password = parts[4].trim();
                 String accessLevel = parts[5].trim();
 
-                
-                
-         
-                
-           
+      
               // Successful login
 if (inputUsername.equalsIgnoreCase(username) && inputPassword.equals(password)) {
 

@@ -22,6 +22,7 @@ public abstract class Employee {
     private double clothingAllowance;
     private double grossRate;
     private double hourlyRate;
+    private Role role;
 
     // ABSTRACT METHOD
     // Must be overridden by subclasses
@@ -45,6 +46,14 @@ public abstract class Employee {
     // Version 3 (Overloaded)
     public String getFullName(String middleInitial) {
         return firstName + " " + middleInitial + ". " + lastName;
+    }
+    
+    public Role getRole() {
+    return role;
+    }
+
+    public void setRole(Role role) {
+    this.role = role;
     }
 
     // GETTERS AND SETTERS
