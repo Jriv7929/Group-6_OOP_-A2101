@@ -1,9 +1,7 @@
-
 package motorph_oop.utils;
 
 import motorph_oop.util.Constants;
 import motorph_oop.model.Employee;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,15 +12,19 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
+/// Handles payroll computation including salary, deductions, and tax calculation.
+ 
 public class PayrollService {
 
+    // Contribution and deduction constants
     private static final double SSS_RATE_MIN = 135.00;
     private static final double SSS_RATE_MAX = 1125.00;
     private static final double PHILHEALTH_RATE = 0.04;
     private static final double PHILHEALTH_CAP = 4000.00;
     private static final double PAGIBIG_CONTRIBUTION = 100.00;
 
-    // RESTORED TAX TABLE
+    // Progressive tax table:
+    // { lowerBound, upperBound, taxRate, baseTax }
     private static final double[][] TAX_TABLE = {
         {20833, 33333, 0.20, 0.00},
         {33333, 66667, 0.25, 2083.33},
@@ -31,15 +33,14 @@ public class PayrollService {
         {666667, Double.MAX_VALUE, 0.35, 102083.33}
     };
 
+    // Date and time formatters
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
 
     private static final DateTimeFormatter TIME_FORMATTER =
             DateTimeFormatter.ofPattern(Constants.TIME_FORMAT);
 
-    // =============================
-    // RESULT CLASS
-    // =============================
+    // Holds payroll computation results.
     public static class PayrollResult {
 
         private final double grossSalary;
@@ -64,27 +65,44 @@ public class PayrollService {
             this.netSalary = netSalary;
         }
 
-        public double getGrossSalary() { return grossSalary; }
-        public double getSssDeduction() { return sssDeduction; }
-        public double getPhilhealthDeduction() { return philhealthDeduction; }
-        public double getPagibigDeduction() { return pagibigDeduction; }
-        public double getWithholdingTax() { return withholdingTax; }
-        public double getNetSalary() { return netSalary; }
+        public double getGrossSalary() {
+            return grossSalary;
+        }
+
+        public double getSssDeduction() {
+            return sssDeduction;
+        }
+
+        public double getPhilhealthDeduction() {
+            return philhealthDeduction;
+        }
+
+        public double getPagibigDeduction() {
+            return pagibigDeduction;
+        }
+
+        public double getWithholdingTax() {
+            return withholdingTax;
+        }
+
+        public double getNetSalary() {
+            return netSalary;
+        }
     }
 
-    // =============================
-    // MAIN PAYROLL METHOD
-    // =============================
+    // Calculates payroll details for an employee.   
     public static PayrollResult calculatePayroll(Employee employee,
                                                  String attendanceFile,
                                                  String selectedMonth) {
 
         double hoursWorked =
-                calculateTotalHoursWorked(employee.getEmpNo(),
+                calculateTotalHoursWorked(
+                        employee.getEmpNo(),
                         attendanceFile,
-                        selectedMonth);
+                        selectedMonth
+                );
 
-        // POLYMORPHISM
+        // Polymorphism: salary computation depends on employee type
         double grossSalary = employee.computeSalary(hoursWorked);
 
         double sssDeduction =
@@ -97,14 +115,16 @@ public class PayrollService {
                 calculatePagIBIGDeduction();
 
         double taxableIncome =
-                grossSalary - (sssDeduction + philhealthDeduction + pagibigDeduction);
+                grossSalary -
+                (sssDeduction + philhealthDeduction + pagibigDeduction);
 
         double withholdingTax =
                 calculateWithholdingTax(taxableIncome);
 
         double netSalary =
-                grossSalary - (sssDeduction + philhealthDeduction +
-                               pagibigDeduction + withholdingTax);
+                grossSalary -
+                (sssDeduction + philhealthDeduction +
+                 pagibigDeduction + withholdingTax);
 
         return new PayrollResult(
                 grossSalary,
@@ -116,9 +136,7 @@ public class PayrollService {
         );
     }
 
-    // =============================
-    // HOURS WORKED
-    // =============================
+    // Calculates total hours worked based on attendance records.
     private static double calculateTotalHoursWorked(String empNo,
                                                     String attendanceFile,
                                                     String selectedMonth) {
@@ -145,64 +163,77 @@ public class PayrollService {
 
                     try {
                         LocalDate date =
-                                LocalDate.parse(parts[3].trim(),
-                                        DATE_FORMATTER);
+                                LocalDate.parse(
+                                        parts[3].trim(),
+                                        DATE_FORMATTER
+                                );
 
                         String monthYear =
                                 date.getMonth()
-                                    .getDisplayName(TextStyle.FULL,
-                                            Locale.ENGLISH)
-                                    + " " + date.getYear();
+                                        .getDisplayName(
+                                                TextStyle.FULL,
+                                                Locale.ENGLISH
+                                        )
+                                + " " + date.getYear();
 
                         if ("All".equals(selectedMonth)
                                 || monthYear.equals(selectedMonth)) {
 
                             LocalTime logIn =
-                                    LocalTime.parse(parts[4].trim(),
-                                            TIME_FORMATTER);
+                                    LocalTime.parse(
+                                            parts[4].trim(),
+                                            TIME_FORMATTER
+                                    );
 
                             LocalTime logOut =
                                     parts[5].trim().isEmpty()
                                             ? LocalTime.now()
-                                            : LocalTime.parse(parts[5].trim(),
-                                            TIME_FORMATTER);
+                                            : LocalTime.parse(
+                                                    parts[5].trim(),
+                                                    TIME_FORMATTER
+                                            );
 
                             totalHours +=
                                     Duration.between(logIn, logOut)
                                             .toMinutes() / 60.0;
                         }
 
-                    } catch (Exception ignored) { }
+                    } catch (Exception ignored) {
+                    }
                 }
             }
 
-        } catch (IOException ignored) { }
+        } catch (IOException ignored) {
+        }
 
         return totalHours;
     }
 
-    // =============================
-    // DEDUCTIONS
-    // =============================
+    // Calculates SSS deduction. 
     private static double calculateSSSDeduction(double basicSalary) {
 
-        if (basicSalary < 4000) return SSS_RATE_MIN;
-        if (basicSalary >= 29750) return SSS_RATE_MAX;
+        if (basicSalary < 4000) {
+            return SSS_RATE_MIN;
+        }
+
+        if (basicSalary >= 29750) {
+            return SSS_RATE_MAX;
+        }
 
         return SSS_RATE_MIN;
     }
 
+    // Calculates PhilHealth deduction.  
     private static double calculatePhilHealthDeduction(double basicSalary) {
         return Math.min(basicSalary * PHILHEALTH_RATE, PHILHEALTH_CAP);
     }
 
+    // Returns Pag-IBIG deduction.   
     private static double calculatePagIBIGDeduction() {
         return PAGIBIG_CONTRIBUTION;
     }
 
-    // =============================
-    // CORRECT PROGRESSIVE TAX
-    // =============================
+    // Calculates withholding tax using progressive tax brackets.     
     private static double calculateWithholdingTax(double taxableIncome) {
 
         if (taxableIncome <= 20833) {

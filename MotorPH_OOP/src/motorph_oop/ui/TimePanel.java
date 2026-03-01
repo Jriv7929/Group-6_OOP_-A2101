@@ -2,174 +2,194 @@
 package motorph_oop.ui;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
-import java.util.Locale;
-import java.util.Scanner;
 import javax.swing.table.DefaultTableModel;
-import motorph_oop.util.CSVHandler;
+import java.awt.*;
+import java.util.List;
+import motorph_oop.service.AttendanceService;
 import motorph_oop.util.Constants;
 
+// Time tracking panel.
+// Allows employee to check in, check out, and view attendance records.
+ 
 public class TimePanel extends JPanel {
+
+    // Logged-in employee details
     private String loggedInEmployee;
     private String loggedInLastName;
     private String loggedInFirstName;
-    private JTable loggedInAttendanceTable;
-    private DefaultTableModel loggedInAttendanceModel;
-    private JComboBox<String> loggedInComboMonth;
-    private JPanel loggedInTablePanel = new JPanel();
-    private JPanel loggedInCenterContainer = new JPanel(new BorderLayout());
-    private JPanel loggedInTopPanel = new JPanel(new GridLayout(1, 1, 5, 5));
-    private JButton btnTimeIn = UIUtils.createButton("Check In", null, null);
-    private JButton btnTimeOut = UIUtils.createButton("Check Out", null, null);
-    private LocalDate date = LocalDate.now();
-    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
-    private String formattedDate = date.format(dateFormatter);
 
+    // Table components
+    private JTable table;
+    private DefaultTableModel model;
+
+    // Month filter
+    private JComboBox<String> comboMonth;
+
+    // Top panel
+    private JPanel topPanel =
+            new JPanel(new GridLayout(1, 1, 5, 5));
+
+    // Buttons
+    private JButton btnTimeIn =
+            UIUtils.createButton("Check In", null, null);
+
+    private JButton btnTimeOut =
+            UIUtils.createButton("Check Out", null, null);
+
+    // Service layer
+    private final AttendanceService attendanceService =
+            new AttendanceService();
+
+    //Constructor: builds UI layout.
     public TimePanel() {
+
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1200, getHeight()));
 
-        JLabel timeHeading = UIUtils.createHeaderLabel("Time");
-        loggedInTopPanel.add(timeHeading, BorderLayout.NORTH);
-        loggedInTopPanel.add(btnTimeIn);
-        add(loggedInTopPanel, BorderLayout.NORTH);
 
-        loggedInAttendanceModel = new DefaultTableModel(new String[]{"Date", "Log In", "Log Out"}, 0);
-        loggedInAttendanceTable = new JTable(loggedInAttendanceModel);
-        JScrollPane loggedInTableScroll = new JScrollPane(loggedInAttendanceTable);
-        loggedInTableScroll.setPreferredSize(new Dimension(950, 650));
-        loggedInTablePanel.add(loggedInTableScroll);
+        // Header Section
+        JLabel heading =
+                UIUtils.createHeaderLabel("Time");
 
-        loggedInComboMonth = new JComboBox<>();
-        loggedInComboMonth.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20)); // top, left, bottom, right
-        loggedInComboMonth.addItem("All");
-        loggedInComboMonth.addActionListener(e -> reloadTable());
+        topPanel.add(heading);
+        topPanel.add(btnTimeIn);
 
-        loggedInCenterContainer.add(loggedInComboMonth, BorderLayout.NORTH);
-        loggedInCenterContainer.add(loggedInTablePanel);
-        add(loggedInCenterContainer, BorderLayout.SOUTH);
+        add(topPanel, BorderLayout.NORTH);
 
+    
+        // Attendance Table
+        model = new DefaultTableModel(
+                new String[] { "Date", "Log In", "Log Out" },
+                0
+        );
+
+        table = new JTable(model);
+
+        JScrollPane scroll =
+                new JScrollPane(table);
+
+        scroll.setPreferredSize(
+                new Dimension(950, 650)
+        );
+
+        // Month Filter
+        comboMonth = new JComboBox<>();
+        comboMonth.addItem("All");
+
+        comboMonth.addActionListener(e -> reloadTable());
+
+        JPanel center =
+                new JPanel(new BorderLayout());
+
+        center.add(comboMonth, BorderLayout.NORTH);
+        center.add(scroll);
+
+        add(center, BorderLayout.SOUTH);
+
+
+        // Button Actions
         btnTimeIn.addActionListener(e -> checkIn());
         btnTimeOut.addActionListener(e -> checkOut());
     }
 
-    public void setLoggedIn(String userLoggedIn, String userLastName, String userFirstName) {
-        this.loggedInEmployee = userLoggedIn;
-        this.loggedInLastName = userLastName;
-        this.loggedInFirstName = userFirstName;
-        loadAvailableMonths();
+    // Sets logged-in employee details.
+    public void setLoggedIn(String empId,
+                            String lastName,
+                            String firstName) {
+
+        this.loggedInEmployee = empId;
+        this.loggedInLastName = lastName;
+        this.loggedInFirstName = firstName;
+
+        loadMonths();
         reloadTable();
     }
 
-    private void loadAvailableMonths() {
-        loggedInComboMonth.removeAllItems();
-        loggedInComboMonth.addItem("All");
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
-        CSVHandler.loadAvailableMonths(Constants.ATTENDANCE_CSV, loggedInEmployee, dateFormat)
-                .forEach(loggedInComboMonth::addItem);
+    //Loads available months for attendance.
+    private void loadMonths() {
+
+        comboMonth.removeAllItems();
+        comboMonth.addItem("All");
+
+        attendanceService
+                .getAvailableMonths(loggedInEmployee)
+                .forEach(comboMonth::addItem);
     }
 
+    // Reloads attendance table.
     private void reloadTable() {
-        loggedInAttendanceModel.setRowCount(0);
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
-        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern(Constants.TIME_FORMAT);
-        String selectedMonth = (String) loggedInComboMonth.getSelectedItem();
 
-        try (Scanner scanner = new Scanner(new File(Constants.ATTENDANCE_CSV), "UTF-8")) {
-            boolean skipHeader = true;
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (skipHeader) {
-                    skipHeader = false;
-                    continue;
-                }
+        model.setRowCount(0);
 
-                String[] parts = line.split(",", -1);
-                if (parts.length >= 6 && parts[0].trim().equals(loggedInEmployee)) {
-                    try {
-                        LocalDate date = LocalDate.parse(parts[3].trim(), dateFormat);
-                        String monthYear = date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
-                        if (!"All".equals(selectedMonth) && !monthYear.equals(selectedMonth)) continue;
+        List<Object[]> rows =
+                attendanceService.getAttendance(loggedInEmployee);
 
-                        loggedInAttendanceModel.addRow(new Object[]{
-                            parts[3].trim(), parts[4].trim(), parts[5].trim()
-                        });
-                    } catch (Exception e) {
-                        // Skip malformed entries
-                    }
-                }
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error reading CSV: " + e.getMessage());
+        for (Object[] row : rows) {
+            model.addRow(row);
         }
     }
 
+    // Handles employee check-in.
     private void checkIn() {
-        String timeIn = LocalTime.now().format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT));
-        int checkInConfirm = JOptionPane.showConfirmDialog(null, "The time now is: " + timeIn + "\nConfirm Check In?", "Confirm Check In", JOptionPane.YES_NO_OPTION);
 
-        if (checkInConfirm == JOptionPane.YES_OPTION) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(Constants.ATTENDANCE_CSV, true))) {
-                writer.write(String.join(",", loggedInEmployee, loggedInLastName, loggedInFirstName, formattedDate, timeIn, ""));
-                writer.newLine();
-                loadAvailableMonths();
-                reloadTable();
-                JOptionPane.showMessageDialog(this, "Checked In Successfully!");
-                loggedInTopPanel.remove(btnTimeIn);
-                loggedInTopPanel.add(btnTimeOut);
-                loggedInTopPanel.revalidate();
-                loggedInTopPanel.repaint();
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error writing to file.");
-            }
+        int confirm =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Confirm Check In?",
+                        "Check In",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+
+            attendanceService.checkIn(
+                    loggedInEmployee,
+                    loggedInLastName,
+                    loggedInFirstName
+            );
+
+            loadMonths();
+            reloadTable();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Checked In Successfully!"
+            );
+
+            topPanel.remove(btnTimeIn);
+            topPanel.add(btnTimeOut);
+            topPanel.revalidate();
+            topPanel.repaint();
         }
     }
 
+    // Handles employee check-out.
     private void checkOut() {
-        String timeOut = LocalTime.now().format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT));
-        int checkOutConfirm = JOptionPane.showConfirmDialog(null, "The time now is: " + timeOut + "\nConfirm Check Out?", "Confirm Check Out", JOptionPane.YES_NO_OPTION);
 
-        if (checkOutConfirm == JOptionPane.YES_OPTION) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(Constants.ATTENDANCE_CSV));
-                 BufferedWriter writer = new BufferedWriter(new FileWriter("src\\temp.csv"))) {
-                String line;
-                boolean updated = false;
+        int confirm =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Confirm Check Out?",
+                        "Check Out",
+                        JOptionPane.YES_NO_OPTION
+                );
 
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.split(",", -1);
-                    if (!updated && parts.length >= 5 && parts[3].equals(formattedDate) && !parts[4].isEmpty() && parts[5].isEmpty()) {
-                        line = String.join(",", parts[0], parts[1], parts[2], parts[3], parts[4], timeOut);
-                        updated = true;
-                    }
-                    writer.write(line);
-                    writer.newLine();
-                }
-                reader.close();
-                writer.close();
+        if (confirm == JOptionPane.YES_OPTION) {
 
-                new File(Constants.ATTENDANCE_CSV).delete();
-                new File("src/temp.csv").renameTo(new File(Constants.ATTENDANCE_CSV));
+            attendanceService.checkOut(loggedInEmployee);
 
-                JOptionPane.showMessageDialog(this, "Checked Out at " + timeOut);
-                loggedInTopPanel.remove(btnTimeOut);
-                loggedInTopPanel.add(btnTimeIn);
-                loggedInTopPanel.revalidate();
-                loggedInTopPanel.repaint();
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error during Check-Out.");
-            }
-            loadAvailableMonths();
+            loadMonths();
             reloadTable();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Checked Out Successfully!"
+            );
+
+            topPanel.remove(btnTimeOut);
+            topPanel.add(btnTimeIn);
+            topPanel.revalidate();
+            topPanel.repaint();
         }
     }
 }

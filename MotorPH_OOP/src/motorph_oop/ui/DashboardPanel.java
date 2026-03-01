@@ -1,4 +1,3 @@
-
 package motorph_oop.ui;
 
 import java.awt.*;
@@ -6,10 +5,16 @@ import javax.swing.*;
 import motorph_oop.model.Employee;
 import motorph_oop.ui.LeaveApproval;
 
+// Main dashboard frame for Admin and Employee views.
+// Uses CardLayout for panel switching.
+
 public class DashboardPanel extends JFrame {
 
+    // Layout handling
     private CardLayout cardLayout;
     private JPanel cardPanel;
+
+    // User information
     private String userRole;
     private String userEmpNo;
     private String userLoggedIn;
@@ -17,14 +22,19 @@ public class DashboardPanel extends JFrame {
     private String userLastname;
     private String selectedEmpNo;
 
+    // Panels
     public EmployeeDashboardPanel homePanel = new EmployeeDashboardPanel();
     public AddEmployeePanel addEmpPanel = new AddEmployeePanel();
     public FullDetailsPanel fullEmpPanel = new FullDetailsPanel();
     public LeavePanel leaveApp = new LeavePanel();
     public TimePanel timeEmpPanel = new TimePanel();
 
-    DashboardPanel(String employeenum, String accesslevel,
-                   String loginnum, String lastname, String firstname) {
+    // Constructor for DashboardPanel.
+    DashboardPanel(String employeenum,
+                   String accesslevel,
+                   String loginnum,
+                   String lastname,
+                   String firstname) {
 
         userRole = accesslevel;
         userEmpNo = employeenum;
@@ -38,7 +48,7 @@ public class DashboardPanel extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // NAVIGATION PANEL 
+        // NAVIGATION PANEL
         JPanel navPanel = new JPanel();
         navPanel.setBackground(new Color(128, 0, 0));
         navPanel.setPreferredSize(new Dimension(200, getHeight()));
@@ -53,19 +63,36 @@ public class DashboardPanel extends JFrame {
         admin.setAlignmentX(Component.CENTER_ALIGNMENT);
         admin.setForeground(Color.WHITE);
 
-        JButton btnDatabase = UIUtils.createNavButton("Employee Database", Color.white, Color.black);
-        JButton btnAdd = UIUtils.createNavButton("Add Employee", Color.white, Color.black);
-        JButton btnFullDetails = UIUtils.createNavButton("View Full Details", Color.white, Color.black);
-        JButton btnTime = UIUtils.createNavButton("Time", Color.white, Color.black);
-        JButton btnLeave = UIUtils.createNavButton("Leave Application", Color.white, Color.black);
-        JButton btnLeaveRequests = UIUtils.createNavButton("Leave Requests", Color.white, Color.black);
-        JButton btnEmpHome = UIUtils.createNavButton("Home", Color.white, Color.black);
-        JButton btnLogout = UIUtils.createNavButton("Log out", Color.white, Color.black);
+        // Navigation buttons
+        JButton btnDatabase =
+                UIUtils.createNavButton("Employee Database", Color.white, Color.black);
 
-        // CARD PANEL 
+        JButton btnAdd =
+                UIUtils.createNavButton("Add Employee", Color.white, Color.black);
+
+        JButton btnFullDetails =
+                UIUtils.createNavButton("View Full Details", Color.white, Color.black);
+
+        JButton btnTime =
+                UIUtils.createNavButton("Time", Color.white, Color.black);
+
+        JButton btnLeave =
+                UIUtils.createNavButton("Leave Application", Color.white, Color.black);
+
+        JButton btnLeaveRequests =
+                UIUtils.createNavButton("Leave Requests", Color.white, Color.black);
+
+        JButton btnEmpHome =
+                UIUtils.createNavButton("Home", Color.white, Color.black);
+
+        JButton btnLogout =
+                UIUtils.createNavButton("Log out", Color.white, Color.black);
+
+        // CARD PANEL
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
 
+  
         // ADMIN VIEW
         if (userRole.equalsIgnoreCase("Admin")) {
 
@@ -82,30 +109,36 @@ public class DashboardPanel extends JFrame {
             navPanel.add(Box.createVerticalStrut(10));
             navPanel.add(btnTime);
             navPanel.add(Box.createVerticalStrut(10));
-            navPanel.add(btnLeaveRequests);   // ✅ NEW BUTTON
+            navPanel.add(btnLeaveRequests);
             navPanel.add(Box.createVerticalStrut(50));
             navPanel.add(btnLogout);
 
             cardPanel.add(homePanel, "Home");
 
             btnFullDetails.addActionListener(e -> {
+
                 selectedEmpNo = homePanel.getSelectedEmployeeNo();
                 fullEmpPanel.setEmployeeNo(selectedEmpNo);
 
-                if (selectedEmpNo == null || selectedEmpNo.trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(this,
+                if (selectedEmpNo == null ||
+                    selectedEmpNo.trim().isEmpty()) {
+
+                    JOptionPane.showMessageDialog(
+                            this,
                             "Please select an employee.",
                             "No Selection",
-                            JOptionPane.WARNING_MESSAGE);
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
                 } else {
                     switchPanel(fullEmpPanel);
                 }
             });
 
-            // OPEN LEAVE APPROVAL WINDOW
-            btnLeaveRequests.addActionListener(e -> {
-                new LeaveApproval().setVisible(true);
-            });
+            // Open Leave Approval window
+            btnLeaveRequests.addActionListener(e ->
+                    new LeaveApproval().setVisible(true)
+            );
         }
 
         // EMPLOYEE VIEW
@@ -126,37 +159,54 @@ public class DashboardPanel extends JFrame {
 
             cardPanel.add(fullEmpPanel, "Home");
 
-            btnEmpHome.addActionListener(e -> switchPanel(fullEmpPanel));
-            btnLeave.addActionListener(e -> switchPanel(leaveApp));
+            btnEmpHome.addActionListener(e ->
+                    switchPanel(fullEmpPanel)
+            );
+
+            btnLeave.addActionListener(e ->
+                    switchPanel(leaveApp)
+            );
         }
-
+        
         // COMMON BUTTON ACTIONS
-
         btnDatabase.addActionListener(e -> {
+
             selectedEmpNo = null;
-            homePanel.reloadCSV();
+            homePanel.reloadEmployees();
             homePanel.clearFields();
             switchPanel(homePanel);
         });
 
-        btnAdd.addActionListener(e -> switchPanel(addEmpPanel));
+        btnAdd.addActionListener(e ->
+                switchPanel(addEmpPanel)
+        );
 
         btnTime.addActionListener(e -> {
-            timeEmpPanel.setLoggedIn(userLoggedIn, userLastname, userFirstname);
+
+            timeEmpPanel.setLoggedIn(
+                    userLoggedIn,
+                    userLastname,
+                    userFirstname
+            );
+
             switchPanel(timeEmpPanel);
         });
 
         btnLogout.addActionListener(e -> {
+
             new LoginPanel();
             dispose();
         });
 
         add(navPanel, BorderLayout.WEST);
         add(cardPanel, BorderLayout.CENTER);
+
         setVisible(true);
     }
 
+    // Switches displayed panel in CardLayout.
     private void switchPanel(JPanel panel) {
+
         cardPanel.removeAll();
         cardPanel.add(panel);
         cardPanel.revalidate();
