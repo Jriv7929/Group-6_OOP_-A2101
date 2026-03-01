@@ -94,7 +94,7 @@ public class AttendanceDAO {
         try (Scanner scanner =
                      new Scanner(new File(Constants.ATTENDANCE_CSV), "UTF-8")) {
 
-            scanner.nextLine(); // ⏭ Skip header
+            scanner.nextLine(); 
 
             while (scanner.hasNextLine()) {
 
@@ -250,4 +250,5 @@ public class AttendanceDAO {
 
         return rows;
     }
+
 }
