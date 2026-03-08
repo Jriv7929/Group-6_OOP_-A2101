@@ -34,10 +34,4 @@ EmployeeNo,Username,Last Name,First Name,Password,AccessLevel
 10034,Bsantos,Santos,Beatriz,1234,Employee
 10035,Creyes,Reyes,Carl,1234,Employee
 10035,JRivera,Employee,Employee,MMDC1234!,Active
-10035,JRivera,Employee,Employee,1234,Active
-10035,JRivera,Employee,Employee,1234,Active
-10035,JRivera,Employee,Employee,1234,Active
-10035,JRivera,Employee,Employee,1234,Active
-10035,JRivera,Employee,Employee,1234,Active
-10035,JRivera,Employee,Employee,1234,Active
-10035,JRivera,Employee,Employee,1234,Active
+
