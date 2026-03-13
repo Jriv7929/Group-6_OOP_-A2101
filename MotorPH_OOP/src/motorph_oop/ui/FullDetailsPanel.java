@@ -8,29 +8,26 @@ import motorph_oop.service.EmployeeService;
 import motorph_oop.util.Constants;
 import motorph_oop.utils.PayrollService;
 import motorph_oop.utils.PayrollService.PayrollResult;
+import motorph_oop.util.Session;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.List;
 
-// Displays full employee details,attendance records, and payroll computation.
- 
 public class FullDetailsPanel extends JPanel {
-
-    // Selected employee number
+    
     private String employeeNum;
+    private String userRole;
 
-    // Services and DAOs
     private final EmployeeService employeeService = new EmployeeService();
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
     private final AttendanceDAO attendanceDAO = new AttendanceDAO();
 
-    // Attendance table
     private JTable attendanceTable;
     private DefaultTableModel attendanceModel;
 
-    // UI components
     private JLabel totalSalary;
     private JComboBox<String> comboMonth;
 
@@ -55,34 +52,31 @@ public class FullDetailsPanel extends JPanel {
     private JTextField grossRate = UIUtils.createTextField(true);
     private JTextField hourlyRateField = UIUtils.createTextField(true);
 
+    // Buttons
+    private JButton btnCalculate;
+    private JButton setPasswordBtn;
+    private JButton updateBtn;
+    private JButton deleteBtn;
+
     // Panels
     private JPanel bottomPanel = new JPanel(new BorderLayout());
     private JPanel tablePanel = new JPanel();
     private JPanel centerContainer = new JPanel(new BorderLayout());
     private JPanel buttons = new JPanel(new GridLayout(4, 1, 20, 20));
 
-    // Constructor: builds layout and components.
     public FullDetailsPanel() {
-
+        
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1200, getHeight()));
 
-        // Attendance Table
-        attendanceModel =
-                new DefaultTableModel(Constants.ATTENDANCE_COLUMNS, 0);
-
+        attendanceModel = new DefaultTableModel(Constants.ATTENDANCE_COLUMNS, 0);
         attendanceTable = new JTable(attendanceModel);
 
-        JScrollPane tableScroll =
-                new JScrollPane(attendanceTable);
-
-        tableScroll.setPreferredSize(
-                new Dimension(950, 150)
-        );
+        JScrollPane tableScroll = new JScrollPane(attendanceTable);
+        tableScroll.setPreferredSize(new Dimension(950, 150));
 
         tablePanel.add(tableScroll);
 
-        // Top Panel (Month Filter + Salary)
         totalSalary = new JLabel("Total Salary: ₱0.00");
         totalSalary.setFont(new Font("Arial", Font.BOLD, 16));
 
@@ -90,8 +84,7 @@ public class FullDetailsPanel extends JPanel {
         comboMonth.addItem("All");
         comboMonth.addActionListener(e -> reloadTable());
 
-        JPanel topPanel =
-                new JPanel(new GridLayout(1, 3, 5, 5));
+        JPanel topPanel = new JPanel(new GridLayout(1, 3, 5, 5));
 
         topPanel.add(new JLabel("Filter by Month:"));
         topPanel.add(comboMonth);
@@ -99,72 +92,59 @@ public class FullDetailsPanel extends JPanel {
 
         add(topPanel, BorderLayout.NORTH);
 
-        // Form Panels
-        JPanel formPanel =
-                new JPanel(new GridLayout(3, 1, 5, 2));
+        JPanel formPanel = new JPanel(new GridLayout(3, 1, 5, 2));
 
-        formPanel.add(
-                UIUtils.createEmployeeInfoPanel(
-                        empNo,
-                        lastName,
-                        firstName,
-                        status,
-                        position,
-                        supervisor
-                )
+        formPanel.add(UIUtils.createEmployeeInfoPanel(
+                empNo,
+                lastName,
+                firstName,
+                status,
+                position,
+                supervisor
+        ));
+
+        formPanel.add(UIUtils.createPersonalInfoPanel(
+                birthday,
+                address,
+                phone,
+                sss,
+                philhealth,
+                tin,
+                pagibig
+        ));
+
+        formPanel.add(UIUtils.createFinancialInfoPanel(
+                basicSalary,
+                riceSubsidyField,
+                phoneAllowanceField,
+                clothingAllowanceField,
+                grossRate,
+                hourlyRateField
+        ));
+
+        btnCalculate = UIUtils.createButton(
+                "View Salary",
+                new Color(52, 58, 235),
+                Color.WHITE
         );
 
-        formPanel.add(
-                UIUtils.createPersonalInfoPanel(
-                        birthday,
-                        address,
-                        phone,
-                        sss,
-                        philhealth,
-                        tin,
-                        pagibig
-                )
+        setPasswordBtn = UIUtils.createButton(
+                "Generate Payslip",
+                new Color(235, 122, 52),
+                Color.WHITE
         );
 
-        formPanel.add(
-                UIUtils.createFinancialInfoPanel(
-                        basicSalary,
-                        riceSubsidyField,
-                        phoneAllowanceField,
-                        clothingAllowanceField,
-                        grossRate,
-                        hourlyRateField
-                )
+        updateBtn = UIUtils.createButton(
+                "Update Record",
+                new Color(0, 180, 0),
+                Color.WHITE
         );
 
-        // Buttons   
-        JButton btnCalculate =
-                UIUtils.createButton(
-                        "Calculate Salary",
-                        new Color(52, 58, 235),
-                        Color.WHITE
-                );
-
-        JButton setPasswordBtn =
-                UIUtils.createButton(
-                        "Set Password",
-                        new Color(235, 122, 52),
-                        Color.WHITE
-                );
-
-        JButton updateBtn =
-                UIUtils.createButton(
-                        "Update Employee",
-                        new Color(0, 180, 0),
-                        Color.WHITE
-                );
-
-        JButton deleteBtn =
-                UIUtils.createButton(
-                        "Delete Employee",
-                        new Color(168, 0, 0),
-                        Color.WHITE
-                );
+        deleteBtn = UIUtils.createButton(
+                "Delete Record",
+                new Color(168, 0, 0),
+                Color.WHITE
+        );
 
         btnCalculate.addActionListener(e -> calculateSalary());
         updateBtn.addActionListener(e -> updateEmployee());
@@ -182,9 +162,93 @@ public class FullDetailsPanel extends JPanel {
 
         add(bottomPanel, BorderLayout.SOUTH);
         add(centerContainer, BorderLayout.CENTER);
+        setUserRole(Session.role);
     }
 
-    // Sets employee number and reloads data.  
+    // Role from login/dashboard
+    public void setUserRole(String role) {
+        this.userRole = role;
+        applyEmployeeRestrictions();
+    }
+
+    // Disable fields if employee
+    private void applyEmployeeRestrictions() {
+
+    if (userRole == null) return;
+
+    JTextField[] allFields = {
+            lastName, firstName, status, position, supervisor,
+            birthday, sss, philhealth, tin, pagibig,
+            basicSalary, riceSubsidyField, phoneAllowanceField,
+            clothingAllowanceField, grossRate, hourlyRateField, address, phone
+    };
+
+    String role = userRole.toUpperCase();
+
+    // Reset everything first (safe default)
+    for (JTextField f : allFields) {
+        f.setEditable(true);
+    }
+
+        btnCalculate.setVisible(true);
+        setPasswordBtn.setVisible(true);
+        updateBtn.setVisible(true);
+        deleteBtn.setVisible(true);
+    
+
+
+    switch (role) {
+
+        case "EMPLOYEE":
+
+            for (JTextField f : allFields) {
+                f.setEditable(false);
+            }
+
+            setPasswordBtn.setVisible(false);
+            deleteBtn.setVisible(false);
+
+            break;
+
+        case "IT":
+
+            for (JTextField f : allFields) {
+                f.setEditable(false);
+            }
+            btnCalculate.setVisible(false);
+            updateBtn.setVisible(false);
+            deleteBtn.setVisible(false);
+
+            break;
+
+        case "HR":
+
+            btnCalculate.setVisible(false);
+            setPasswordBtn.setVisible(false);
+
+            break;
+
+        case "FINANCE":
+
+            for (JTextField f : allFields) {
+                f.setEditable(false);
+            }
+
+            updateBtn.setVisible(false);
+            deleteBtn.setVisible(false);
+            setPasswordBtn.setVisible(false);
+
+            break;
+
+        case "ADMIN":
+        default:
+            // Admin keeps full access
+            break;
+    }
+}
+    
+    
+    
     public void setEmployeeNo(String employeeNo) {
 
         this.employeeNum = employeeNo;
@@ -194,15 +258,11 @@ public class FullDetailsPanel extends JPanel {
         reloadTable();
     }
 
-    //Loads employee details into form fields.
     private void loadEmployee() {
 
-        Employee employee =
-                employeeDAO.findEmployeeById(employeeNum);
+        Employee employee = employeeDAO.findEmployeeById(employeeNum);
 
-        if (employee == null) {
-            return;
-        }
+        if (employee == null) return;
 
         empNo.setText(employee.getEmpNo());
         lastName.setText(employee.getLastName());
@@ -217,6 +277,7 @@ public class FullDetailsPanel extends JPanel {
         status.setText(employee.getStatus());
         position.setText(employee.getPosition());
         supervisor.setText(employee.getSupervisor());
+
         basicSalary.setText(String.valueOf(employee.getBasicSalary()));
         riceSubsidyField.setText(String.valueOf(employee.getRiceSubsidy()));
         phoneAllowanceField.setText(String.valueOf(employee.getPhoneAllowance()));
@@ -225,7 +286,6 @@ public class FullDetailsPanel extends JPanel {
         hourlyRateField.setText(String.valueOf(employee.getHourlyRate()));
     }
 
-    // Loads available attendance months.
     private void loadAvailableMonths() {
 
         comboMonth.removeAllItems();
@@ -235,7 +295,6 @@ public class FullDetailsPanel extends JPanel {
                 .forEach(comboMonth::addItem);
     }
 
-    // Reloads attendance table and recalculates total salary.
     private void reloadTable() {
 
         attendanceModel.setRowCount(0);
@@ -253,7 +312,7 @@ public class FullDetailsPanel extends JPanel {
 
             total += (double) row[4];
 
-            attendanceModel.addRow(new Object[] {
+            attendanceModel.addRow(new Object[]{
                     row[0],
                     row[1],
                     row[2],
@@ -264,19 +323,14 @@ public class FullDetailsPanel extends JPanel {
 
         totalSalary.setText(
                 "Total Salary: ₱" +
-                new DecimalFormat("#,##0.00").format(total)
+                        new DecimalFormat("#,##0.00").format(total)
         );
     }
 
-    // Calculates payroll and displays payslip.
     private void calculateSalary() {
 
-        Employee employee =
-                employeeDAO.findEmployeeById(employeeNum);
-
-        if (employee == null) {
-            return;
-        }
+        Employee employee = employeeDAO.findEmployeeById(employeeNum);
+        if (employee == null) return;
 
         PayrollResult result =
                 PayrollService.calculatePayroll(
@@ -323,15 +377,10 @@ public class FullDetailsPanel extends JPanel {
         );
     }
 
-    // Updates employee details.
     private void updateEmployee() {
 
-        Employee updated =
-                employeeDAO.findEmployeeById(employeeNum);
-
-        if (updated == null) {
-            return;
-        }
+        Employee updated = employeeDAO.findEmployeeById(employeeNum);
+        if (updated == null) return;
 
         updated.setLastName(lastName.getText());
         updated.setFirstName(firstName.getText());
@@ -358,16 +407,14 @@ public class FullDetailsPanel extends JPanel {
         JOptionPane.showMessageDialog(this, "Employee updated.");
     }
 
-    // Deletes selected employee.
     private void deleteSelectedRow() {
 
-        int confirm =
-                JOptionPane.showConfirmDialog(
-                        this,
-                        "Are you sure you want to delete this?",
-                        "Confirm Delete",
-                        JOptionPane.YES_NO_OPTION
-                );
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to delete this?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION
+        );
 
         if (confirm == JOptionPane.YES_OPTION) {
 
@@ -378,27 +425,17 @@ public class FullDetailsPanel extends JPanel {
         }
     }
 
-    // Clears all form fields.
     private void clearFields() {
 
-        empNo.setText("");
-        lastName.setText("");
-        firstName.setText("");
-        status.setText("");
-        position.setText("");
-        supervisor.setText("");
-        birthday.setText("");
-        address.setText("");
-        phone.setText("");
-        sss.setText("");
-        philhealth.setText("");
-        tin.setText("");
-        pagibig.setText("");
-        basicSalary.setText("");
-        riceSubsidyField.setText("");
-        phoneAllowanceField.setText("");
-        clothingAllowanceField.setText("");
-        grossRate.setText("");
-        hourlyRateField.setText("");
+        JTextField[] fields = {
+                empNo,lastName,firstName,status,position,supervisor,
+                birthday,address,phone,sss,philhealth,tin,pagibig,
+                basicSalary,riceSubsidyField,phoneAllowanceField,
+                clothingAllowanceField,grossRate,hourlyRateField
+        };
+
+        for (JTextField f : fields) {
+            f.setText("");
+        }
     }
 }

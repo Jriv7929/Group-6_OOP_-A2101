@@ -3,6 +3,11 @@ package motorph_oop.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import motorph_oop.service.LoginService;
 import motorph_oop.model.Employee;
 import motorph_oop.model.Role;
@@ -10,21 +15,19 @@ import motorph_oop.model.AdminAccess;
 import motorph_oop.model.ITAccess;
 import motorph_oop.model.FinanceAccess;
 import motorph_oop.model.HRAccess;
+import motorph_oop.util.Session;
 
-
-// Login window for MotorPH system.
-// Handles authentication and password reset.
- 
 public class LoginPanel extends JFrame {
 
-    // Login fields
     private JTextField empField;
     private JPasswordField passField;
 
-    // Service layer
     private LoginService loginService = new LoginService();
 
-    // Constructor: builds login UI.
+    // SECURITY TRACKERS
+    private Map<String, Integer> loginAttempts = new HashMap<>();
+    private Set<String> lockedUsers = new HashSet<>();
+
     public LoginPanel() {
 
         setTitle("MotorPH Login");
@@ -34,7 +37,6 @@ public class LoginPanel extends JFrame {
         setLayout(new BorderLayout());
 
         // LEFT PANEL
-
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setBackground(new Color(128, 0, 0));
         leftPanel.setPreferredSize(new Dimension(400, 450));
@@ -49,11 +51,9 @@ public class LoginPanel extends JFrame {
         );
 
         JLabel imageLabel =
-                new JLabel(
-                        new ImageIcon(
-                                "src/motorph_oop/resources/motorphimage.png"
-                        )
-                );
+                new JLabel(new ImageIcon(
+                        "src/motorph_oop/resources/motorphimage.png"
+                ));
 
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -94,12 +94,10 @@ public class LoginPanel extends JFrame {
         rightPanel.add(showPassword);
 
         showPassword.addActionListener(e -> {
-
-            if (showPassword.isSelected()) {
-                passField.setEchoChar((char) 0);
-            } else {
+            if (showPassword.isSelected())
+                passField.setEchoChar((char)0);
+            else
                 passField.setEchoChar('•');
-            }
         });
 
         JButton loginButton =
@@ -115,82 +113,181 @@ public class LoginPanel extends JFrame {
         rightPanel.add(exitButton);
 
         JButton resetButton =
-                UIUtils.createButton(
-                        "Forgot Password?",
-                        Color.WHITE,
-                        Color.BLACK
-                );
+                UIUtils.createButton("Forgot Password?", Color.WHITE, Color.BLACK);
 
         resetButton.setBounds(160, 240, 200, 30);
         rightPanel.add(resetButton);
 
-        // BUTTON ACTIONS
         exitButton.addActionListener(e -> System.exit(0));
         loginButton.addActionListener(e -> login());
-        resetButton.addActionListener(e -> openResetDialog());
+        resetButton.addActionListener(e -> sendResetRequest());
 
-        // ADD PANELS
         add(leftPanel, BorderLayout.WEST);
         add(rightPanel, BorderLayout.CENTER);
 
         setVisible(true);
     }
 
-    // LOGIN
-    //Handles login validation.
+    // LOGIN LOGIC
     private void login() {
 
-    String username = empField.getText().trim();
-    String password = new String(passField.getPassword()).trim();
+        String username = empField.getText().trim();
+        String password = new String(passField.getPassword()).trim();
 
-    if (username.isEmpty() || password.isEmpty()) {
+        if (username.isEmpty() || password.isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please fill in your username and password."
+            );
+            return;
+        }
+
+        // CHECK IF LOCKED
+        if (lockedUsers.contains(username)) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "This account is locked due to multiple failed login attempts.\n" +
+                    "Password reset request sent to Admin."
+            );
+            return;
+        }
+
+        Employee user = loginService.authenticate(username, password);
+
+        // FAILED LOGIN
+        if (user == null) {
+
+            int attempts = loginAttempts.getOrDefault(username, 0) + 1;
+            loginAttempts.put(username, attempts);
+
+            if (attempts >= 3) {
+
+                lockedUsers.add(username);
+                loginService.addResetRequest(username);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Account locked after 3 failed attempts.\n" +
+                        "Password reset request sent to Login Management."
+                );
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Invalid username or password.\n" +
+                        "Attempt " + attempts + " of 3."
+                );
+            }
+
+            passField.setText("");
+            passField.requestFocus();
+
+            return;
+        }
+
+        // LOGIN SUCCESS → reset attempts
+        loginAttempts.remove(username);
+
+        // CHECK DEFAULT PASSWORD
+        if (loginService.isDefaultPassword(username)) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "You are using the default password. Please reset it."
+            );
+
+            openResetDialog();
+            return;
+        }
+
+        Session.empNo = user.getEmpNo();
+        Session.firstName = user.getFirstName();
+        Session.lastName = user.getLastName();
+
+        if (user instanceof AdminAccess ||
+            user instanceof ITAccess ||
+            user instanceof HRAccess ||
+            user instanceof FinanceAccess) {
+
+            Session.role = ((Role)user).getRoleName();
+
+            new AdminDashboardPanel(
+                    user.getEmpNo(),
+                    ((Role)user).getRoleName(),
+                    user.getEmpNo(),
+                    user.getLastName(),
+                    user.getFirstName()
+            );
+
+        } else {
+
+            new EmployeeMainDashboard(
+                    user.getEmpNo(),
+                    user.getEmpNo(),
+                    user.getLastName(),
+                    user.getFirstName()
+            );
+        }
+
+        dispose();
+    }
+    
+    // SEND PASSWORD RESET REQUEST
+private void sendResetRequest() {
+
+    String username =
+            JOptionPane.showInputDialog(
+                    this,
+                    "Enter your username:"
+            );
+
+    if (username == null || username.trim().isEmpty()) {
 
         JOptionPane.showMessageDialog(
                 this,
-                "Please fill in your username and password."
+                "Username cannot be empty."
         );
 
         return;
     }
 
-    Employee user = loginService.authenticate(username, password);
+    String[] user =
+            loginService.getUserByUsername(username);
 
     if (user == null) {
 
         JOptionPane.showMessageDialog(
                 this,
-                "Invalid username or password."
+                "User not found."
         );
 
         return;
     }
 
-    if (user instanceof AdminAccess ||
-        user instanceof ITAccess ||
-        user instanceof HRAccess ||
-        user instanceof FinanceAccess) {
+    String role = user[5];
 
-        new AdminDashboardPanel(
-                user.getEmpNo(),
-                ((Role)user).getRoleName(),
-                user.getEmpNo(),
-                user.getLastName(),
-                user.getFirstName()
+    if (role.equalsIgnoreCase("Admin") ||
+        role.equalsIgnoreCase("IT")) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Admin and IT must reset their password through Login Management."
         );
 
-    } else {
-
-        new EmployeeMainDashboard(
-                user.getEmpNo(),
-                user.getEmpNo(),
-                user.getLastName(),
-                user.getFirstName()
-        );
+        return;
     }
 
-    dispose();
-}
+    loginService.addResetRequest(username);
 
+    JOptionPane.showMessageDialog(
+            this,
+            "Password reset request forwarded to Admin/IT team."
+    );
+}
+   
     // RESET PASSWORD
     @FunctionalInterface
     private interface SimpleDocumentListener

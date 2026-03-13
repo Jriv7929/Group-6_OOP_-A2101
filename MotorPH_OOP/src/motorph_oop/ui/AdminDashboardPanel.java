@@ -81,7 +81,7 @@ public class AdminDashboardPanel extends JFrame {
                 UIUtils.createNavButton("Leave Requests", Color.white, Color.black);
 
         btnManageLogin =
-                UIUtils.createNavButton("Credentials Management", Color.white, Color.black);
+                UIUtils.createNavButton("Login Management", Color.white, Color.black);
 
         btnLogout =
                 UIUtils.createNavButton("Log out", Color.white, Color.black);
@@ -111,7 +111,10 @@ public class AdminDashboardPanel extends JFrame {
         navPanel.add(btnLogout);
         navPanel.add(Box.createVerticalStrut(20));
 
-        cardPanel.add(homePanel, "Home");
+        cardPanel.add(homePanel, "HOME");
+        cardPanel.add(fullEmpPanel, "DETAILS");
+        cardPanel.add(addEmpPanel, "ADD");
+        cardPanel.add(timeEmpPanel, "TIME");
 
         // ACTION LISTENERS
 
@@ -125,7 +128,7 @@ public class AdminDashboardPanel extends JFrame {
             selectedEmpNo = null;
             homePanel.reloadEmployees();
             homePanel.clearFields();
-            switchPanel(homePanel);
+            switchPanel("HOME");
         });
 
         btnAdd.addActionListener(e -> {
@@ -135,7 +138,7 @@ public class AdminDashboardPanel extends JFrame {
                 return;
             }
 
-            switchPanel(addEmpPanel);
+            switchPanel("ADD");
         });
 
         btnFullDetails.addActionListener(e -> {
@@ -160,8 +163,10 @@ public class AdminDashboardPanel extends JFrame {
                 return;
             }
 
+            fullEmpPanel.setUserRole(userRole);   // PASS ADMIN ROLE
             fullEmpPanel.setEmployeeNo(selectedEmpNo);
-            switchPanel(fullEmpPanel);
+
+            switchPanel("DETAILS");
         });
 
         btnLeaveRequests.addActionListener(e -> {
@@ -176,31 +181,23 @@ public class AdminDashboardPanel extends JFrame {
 
         btnManageLogin.addActionListener(e -> {
 
-            if (!btnManageLogin.isEnabled()) {
-                showUnauthorized();
-                return;
-            }
+    if (!btnManageLogin.isEnabled()) {
+        showUnauthorized();
+        return;
+    }
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Credentials Management panel not yet implemented."
-            );
+        new LoginManagementPanel();
         });
 
         btnTime.addActionListener(e -> {
 
-            if (!btnTime.isEnabled()) {
-                showUnauthorized();
-                return;
-            }
+        timeEmpPanel.setLoggedIn(
+            userLoggedIn,
+            userLastname,
+            userFirstname
+         );
 
-            timeEmpPanel.setLoggedIn(
-                    userLoggedIn,
-                    userLastname,
-                    userFirstname
-            );
-
-            switchPanel(timeEmpPanel);
+        switchPanel("TIME");
         });
 
         btnLogout.addActionListener(e -> {
@@ -219,12 +216,8 @@ public class AdminDashboardPanel extends JFrame {
     }
 
     // SWITCH PANELS
-    private void switchPanel(JPanel panel) {
-
-        cardPanel.removeAll();
-        cardPanel.add(panel);
-        cardPanel.revalidate();
-        cardPanel.repaint();
+    private void switchPanel(String name) {
+    cardLayout.show(cardPanel, name);
     }
 
     // SHOW UNAUTHORIZED MESSAGE
@@ -247,7 +240,7 @@ public class AdminDashboardPanel extends JFrame {
                 btnDatabase.setEnabled(true);
                 btnAdd.setEnabled(true);
                 btnLeaveRequests.setEnabled(true);
-                btnTime.setEnabled(false);
+                btnTime.setVisible(false); 
                 btnLogout.setEnabled(true);
 
                 break;
@@ -256,33 +249,33 @@ public class AdminDashboardPanel extends JFrame {
 
                 btnManageLogin.setEnabled(true);
                 btnDatabase.setEnabled(true);
-                btnAdd.setEnabled(false);
-                btnLeaveRequests.setEnabled(false);
-                btnTime.setEnabled(false);
+                btnAdd.setVisible(false);
+                btnLeaveRequests.setVisible(false);
+                btnTime.setVisible(false);
                 btnLogout.setEnabled(true);
-
+                
                 break;
 
             case "HR":
 
-                btnManageLogin.setEnabled(true);
+                btnManageLogin.setVisible(false);
                 btnDatabase.setEnabled(true);
                 btnAdd.setEnabled(true);
-                btnLeaveRequests.setEnabled(false);
-                btnTime.setEnabled(false);
+                btnLeaveRequests.setVisible(false);
+                btnTime.setVisible(false);
                 btnLogout.setEnabled(true);
 
                 break;
 
             case "FINANCE":
 
-                btnManageLogin.setEnabled(true);
+                btnManageLogin.setVisible(false);
                 btnDatabase.setEnabled(true);
-                btnAdd.setEnabled(false);
-                btnLeaveRequests.setEnabled(false);
-                btnTime.setEnabled(false);
+                btnAdd.setVisible(false);
+                btnLeaveRequests.setVisible(false);
+                btnTime.setVisible(false);
                 btnLogout.setEnabled(true);
-
+               
                 break;
 
             default:
@@ -292,11 +285,19 @@ public class AdminDashboardPanel extends JFrame {
                         "Your login is not authorized."
                 );
 
-                btnDatabase.setEnabled(false);
-                btnAdd.setEnabled(false);
-                btnLeaveRequests.setEnabled(false);
-                btnTime.setEnabled(false);
-                btnManageLogin.setEnabled(false);
+                btnDatabase.setVisible(false);
+                btnAdd.setVisible(false);
+                btnLeaveRequests.setVisible(false);
+                btnTime.setVisible(false);
+                btnManageLogin.setVisible(false);
+                             
         }
     }
+    
+    public class Session {
+
+    public static String role;
+    public static String empNo;
+
+}
 }

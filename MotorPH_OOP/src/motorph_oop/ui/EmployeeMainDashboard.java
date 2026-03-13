@@ -58,6 +58,7 @@ public class EmployeeMainDashboard extends JFrame {
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
 
+        fullEmpPanel.setUserRole("Employee");   // activate restrictions
         fullEmpPanel.setEmployeeNo(userEmpNo);
 
         navPanel.add(Box.createVerticalStrut(20));

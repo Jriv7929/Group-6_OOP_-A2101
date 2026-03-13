@@ -71,20 +71,17 @@ public class EmployeeDashboardPanel extends JPanel {
         bottomPanel.add(formPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // Table selection listener
         table.getSelectionModel().addListSelectionListener(e -> {
 
-            int selectedRow = table.getSelectedRow();
+    int selectedRow = table.getSelectedRow();
 
-            if (selectedRow >= 0 &&
-                employeeList != null) {
+    if (selectedRow >= 0 && employeeList != null) {
 
-                Employee selectedEmployee =
-                        employeeList.get(selectedRow);
+        Employee selectedEmployee = employeeList.get(selectedRow);
 
-                populateForm(selectedEmployee);
-            }
-        });
+        populateForm(selectedEmployee);
+    }
+});
 
         // Load employee data
         loadEmployees();
